@@ -5,6 +5,7 @@
  */
 package org.java_websocket;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketAddress;
@@ -193,6 +194,9 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 			return 0;
 		}
 		int num = socketChannel.write( wrap( src ) );
+		if (engineResult.getStatus() == SSLEngineResult.Status.CLOSED) {
+			throw new EOFException("Connection is closed");
+		}
 		return num;
 
 	}
@@ -253,6 +257,9 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 		if( inCrypt.hasRemaining() ) {
 			unwrap();
 			int amount = transfereTo( inData, dst );
+			if (engineStatus == SSLEngineResult.Status.CLOSED) {
+				return -1;
+			}
 			if( amount > 0 )
 				return amount;
 		}
